@@ -1,0 +1,339 @@
+generator client {
+  provider        = "prisma-client-js"
+   engineType = "binary"
+  // previewFeatures = ["interactiveTransactions", "orderByRelation"]
+  // binaryTargets   = ["native", "linux-arm64-openssl-1.1.x"]
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum LeadStatus {
+  CONVERTED
+  LOST
+  RESGISTERED
+}
+
+enum PaymentResponseStatusEnum {
+  CREATED
+  BAD_REQUEST
+  PAID
+  NOTPAID
+  SUCCEEDED
+  FAILED
+  PENDING
+  EXPIRED
+  OVERDUE
+  REJECTED
+  VOID //payment link not used
+  PROCESSING
+}
+
+enum TransactionDocStatus {
+  NEW
+  DEPRECATED_AFTER_ORDER_MODIFICATION
+}
+
+enum ClientApplication {
+  ANDROID
+  WEBAPP
+  IOS
+  HUBSPOT
+  SCHEDULER_SERVICE
+}
+
+enum PaymentMethod {
+  CARD
+  UPI
+  NETBANKING
+  WALLET
+  NONE
+  EMI
+  NO_COST_EMI
+}
+
+enum TransactionMediumEnum {
+  RAZORPAY
+  JUSPAY
+}
+
+enum PaymentUrlTypeEnum {
+  UPI_MANDATE
+  NON_MANDATE
+}
+
+enum DiscountType {
+  FLAT
+  PERCENT
+  FLAT_WITH_PERCENT_CAP
+}
+
+enum IssueTypeList {
+  Base
+  BaseOnly
+  SubType
+}
+
+enum CaseStatus {
+  BOOKED
+  BOOKED_FOR_PICKED
+  PICKED
+  REACHED
+  OPENED
+  IN_PROGRESS
+  PENDING
+  REOPENED
+  CLOSED
+  PAYMENT_ISSUE
+  BOOKED_FOR_DROP
+  SUCCESSFULL
+}
+
+enum DeviceStatus {
+  OPENED
+  IN_PROGRESS
+  PENDING
+  CLOSED
+  SUCCESSFULL
+}
+
+enum PlatfromList {
+  WEBSITE
+  GOOGLE_ADS
+  OTHER_ADS
+  ANDROID
+}
+
+model PhoneCompanies {
+  id          String       @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  icon        String
+  isHidden    Boolean
+  modifiedBy  String
+  updatedAt   DateTime     @updatedAt
+  createdAt   DateTime     @default(now())
+  isActive    Boolean      @default(true)
+  phoneModels PhoneModel[]
+  leads       Lead[]
+  Case        Case[]
+}
+
+model PhoneModel {
+  id             String         @id @default(auto()) @map("_id") @db.ObjectId
+  name           String
+  icon           String
+  phoneCompany   PhoneCompanies @relation(fields: [phoneCompanyId], references: [id])
+  phoneCompanyId String         @db.ObjectId
+  isHidden       Boolean
+  modifiedBy     String
+  updatedAt      DateTime       @updatedAt
+  createdAt      DateTime       @default(now())
+  isActive       Boolean        @default(true)
+  issueTypes     IssueType[]
+  Leads          Lead[]
+  Case           Case[]
+}
+
+model IssueType {
+  id              String        @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  icon            String
+  description     String
+  phoneModel      PhoneModel    @relation(fields: [phoneModelId], references: [id])
+  phoneModelId    String        @db.ObjectId
+  IssueType       IssueTypeList @default(Base)
+  baseIssueTypeId String        @db.ObjectId
+  isHidden        Boolean
+  modifiedBy      String
+  updatedAt       DateTime      @updatedAt
+  priority        Int           @default(1)
+  price           Float         @default(0)
+  createdAt       DateTime      @default(now())
+  isActive        Boolean       @default(true)
+  leads           Lead[]
+  Case            Case[]
+}
+
+model User {
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  phonoNo     String        @unique
+  emailId     String        @unique
+  password    String
+  lead        Lead?         @relation(fields: [leadId], references: [id])
+  leadId      String?       @unique @db.ObjectId
+  address     String
+  location    String[]
+  modifiedBy  String
+  updatedAt   DateTime      @updatedAt
+  createdAt   DateTime      @default(now())
+  isActive    Boolean       @default(true)
+  Case        Case[]
+  Transaction Transaction[]
+  PaymentLink PaymentLink[]
+}
+
+model Lead {
+  id             String         @id @default(auto()) @map("_id") @db.ObjectId
+  name           String
+  icon           String
+  description    String
+  phoneModel     PhoneModel     @relation(fields: [phoneModelId], references: [id])
+  phoneModelId   String         @db.ObjectId
+  phoneCompany   PhoneCompanies @relation(fields: [phoneCompanyId], references: [id])
+  phoneCompanyId String         @db.ObjectId
+  issueType      IssueType      @relation(fields: [issueTypeId], references: [id])
+  issueTypeId    String         @db.ObjectId
+  isBaseIssue    Boolean        @default(true)
+  status         LeadStatus     @default(RESGISTERED)
+  platfromList   PlatfromList   @default(WEBSITE)
+  modifiedBy     String
+  updatedAt      DateTime       @updatedAt
+  createdAt      DateTime       @default(now())
+  isActive       Boolean        @default(true)
+  user           User?
+}
+
+model Case {
+  id                String             @id @default(auto()) @map("_id") @db.ObjectId
+  name              String
+  icon              String
+  description       String
+  phoneModel        PhoneModel         @relation(fields: [phoneModelId], references: [id])
+  phoneModelId      String             @db.ObjectId
+  phoneCompany      PhoneCompanies     @relation(fields: [phoneCompanyId], references: [id])
+  phoneCompanyId    String             @db.ObjectId
+  issueType         IssueType          @relation(fields: [issueTypeId], references: [id])
+  issueTypeId       String             @db.ObjectId
+  userId            String             @db.ObjectId
+  user              User               @relation(fields: [userId], references: [id])
+  isBaseIssue       Boolean            @default(true)
+  status            CaseStatus         @default(BOOKED)
+  payment           String
+  modifiedBy        String
+  updatedAt         DateTime           @updatedAt
+  createdAt         DateTime           @default(now())
+  isActive          Boolean            @default(true)
+  discountCode      Discount?
+  total             Float
+  discountPrice     Float
+  discount          Float
+  DeviceExtraDetail DeviceExtraDetail?
+  Transaction       Transaction[]
+}
+
+model DeviceExtraDetail {
+  id           String       @id @default(auto()) @map("_id") @db.ObjectId
+  beforeImages String[]
+  afterImages  String[]
+  simCard      Boolean
+  memoryCard   Boolean
+  description  String?
+  details      String?
+  imeiNumber   String?
+  caseId       String?      @unique @db.ObjectId
+  case         Case?        @relation(fields: [caseId], references: [id])
+  status       DeviceStatus @default(OPENED)
+  modifiedBy   String
+  updatedAt    DateTime     @updatedAt
+  createdAt    DateTime     @default(now())
+  isActive     Boolean      @default(true)
+}
+
+model Discount {
+  id           String       @id @default(auto()) @map("_id") @db.ObjectId
+  discountType DiscountType
+  name         String
+  modifiedBy   String
+  description  String
+  description2 String
+  couponCode   String       @unique
+  flat         Float
+  percentage   Float
+  limit        Float
+  updatedAt    DateTime     @updatedAt
+  createdAt    DateTime     @default(now())
+  isActive     Boolean      @default(true)
+  case         Case?        @relation(fields: [caseId], references: [id])
+  caseId       String?      @unique @db.ObjectId
+  Transaction  Transaction?
+}
+
+model Transaction {
+  id                     String                    @id @default(auto()) @map("_id") @db.ObjectId
+  transactionMedium      TransactionMediumEnum
+  userId                 String                    @db.ObjectId
+  user                   User                      @relation(fields: [userId], references: [id])
+  isBaseIssue            Boolean                   @default(true)
+  caseId                 String                    @db.ObjectId
+  case                   Case                      @relation(fields: [caseId], references: [id])
+  discountId             String                    @unique @db.ObjectId
+  discount               Discount                  @relation(fields: [discountId], references: [id])
+  status                 PaymentResponseStatusEnum @default(CREATED)
+  clientOrigin           ClientApplication         @default(WEBAPP)
+  paymentDate            String
+  transactionDocStatus   TransactionDocStatus      @default(NEW)
+  createdAt              DateTime                  @default(now())
+  updatedAt              DateTime                  @updatedAt
+  razorpay               Razorpay[]
+  isActive               Boolean                   @default(true)
+  PaymentLink            PaymentLink[]
+  PaymentHistory         PaymentHistory[]
+}
+
+model PaymentHistory {
+  id                          String                    @id @default(auto()) @map("_id") @db.ObjectId
+  transactionId               String                    @db.ObjectId
+  amountInRupees              Float
+  paymentGatewayTransactionId String
+  paymentLinkMetaData         Json?
+  transactionMetaData         Json?
+  paymentGatewayEventId       String?
+  paymentMethod               PaymentMethod
+  paymentMethodMetadata       Json?
+  paymentGateWayResponse      Json?
+  paymentStatus               PaymentResponseStatusEnum
+  createdAt                   DateTime                  @default(now())
+  updatedAt                   DateTime                  @default(now()) @updatedAt
+  transaction                 Transaction               @relation(fields: [transactionId], references: [id])
+}
+
+model PaymentLink {
+  id                     String      @id @default(auto()) @map("_id") @db.ObjectId
+  userId                 String      @db.ObjectId
+  user                   User        @relation(fields: [userId], references: [id])
+  transactionId          String      @unique @db.ObjectId
+  paymentLinkId          String      @unique
+  invoiceUrl             String
+  upiMandateLink         String?
+  zohoInvoiceId          String
+  zohoRecurringProfileId String
+  utmSource              String
+  transaction            Transaction @relation(fields: [transactionId], references: [id])
+  createdAt              DateTime    @default(now())
+  updatedAt              DateTime    @updatedAt
+}
+
+model Razorpay {
+  id                    String             @id @default(auto()) @map("_id") @db.ObjectId
+  transaction           Transaction        @relation(fields: [transactionId], references: [id])
+  transactionId         String             @db.ObjectId
+  amountInPaise         Int
+  amountInRupees        Int
+  currency              String             @default("INR")
+  description           String
+  notes                 String
+  callbackUrl           String
+  callbackMethod        String
+  razorpayOption        String
+  paymentGatewayOrderID String
+  shortUrl              String
+  paymentLinkId         String
+  isActive              Boolean?           @default(true)
+  referenceId           String?
+  paymentUrlType        PaymentUrlTypeEnum
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+}
