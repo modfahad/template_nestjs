@@ -1,5 +1,6 @@
 import { UtilReturnType } from "../models/common.dto";
-
+import { LogService } from "./log.service";
+const logService: LogService = new LogService();
 export const _getFullError = (e: any, logId: string) => {
   try {
     const strigified = JSON.stringify(e);
@@ -67,7 +68,7 @@ export const _removeNilKeys = (logId: string, input: any): UtilReturnType<any> =
   } catch (e) {
     const { message, error } = e;
     const finalMsg = `error in _removeNilKeys , message=[${message}] , error=[${error}]`;
-    console.log(finalMsg);
+    logService.error(logId, finalMsg);
     return { data: null, hasError: true, msg: finalMsg };
   }
 };
@@ -109,7 +110,7 @@ export const _purifyList = (logId: string, inputList: string[]): UtilReturnType<
   } catch (e) {
     const { message, error } = e;
     const finalMsg = `error in ${methodName} , message=[${message}] , error=[${error}]`;
-    console.log(finalMsg);
+    logService.error(logId, finalMsg);
     return { hasError: true, data: [], msg: finalMsg };
   }
 };
@@ -131,11 +132,10 @@ export const _toNDigitsPostDecimal = (
   } catch (e) {
     const { message, error } = e;
     const finalMsg = `error in ${methodName} , message=[${message}] , error=[${error}]`;
-    console.log(finalMsg);
+    logService.error(logId, finalMsg);
     return { hasError: true, data: -1, msg: finalMsg };
   }
 };
-//console.log(_toNDigitsPostDecimal("", "4", 2));
 
 export const _isValidNumber = (logId: string, input: any): UtilReturnType<boolean> => {
   const methodName = `_isValidNumber`;
@@ -152,7 +152,7 @@ export const _isValidNumber = (logId: string, input: any): UtilReturnType<boolea
   } catch (e) {
     const { message, error } = e;
     const finalMsg = `error in ${methodName} , message=[${message}] , error=[${error}]`;
-    console.log(finalMsg);
+    logService.error(logId, finalMsg);
     return { hasError: true, data: false, msg: finalMsg };
   }
 };
@@ -165,7 +165,7 @@ export const _isInvalidNumber = (logId: string, input: any): UtilReturnType<bool
   } catch (e) {
     const { message, error } = e;
     const finalMsg = `error in ${methodName} , message=[${message}] , error=[${error}]`;
-    console.log(finalMsg);
+    logService.error(logId, finalMsg);
     return { hasError: true, data: true, msg: finalMsg };
   }
 };
