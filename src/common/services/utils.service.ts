@@ -6,7 +6,7 @@ export const _getFullError = (e: any, logId: string) => {
     return strigified;
   } catch (e) {
     const { message, error } = e;
-    return `error in _getFullError , error=[${error}] , msg=[${message}]`;
+    return `error in _getFullError , error=[${error}] , msg=[${message}] logId=[${logId}]`;
   }
 };
 
@@ -61,6 +61,7 @@ export const _removeNilKeys = (logId: string, input: any): UtilReturnType<any> =
       return { data: input, hasError: isNotPresent.hasError, msg: "" };
     }
     const valuesToRemove = [null, undefined];
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const data = Object.fromEntries(Object.entries(input).filter(([key, value]) => !valuesToRemove.includes(value)));
     return { data, hasError: false, msg: "" };
   } catch (e) {
