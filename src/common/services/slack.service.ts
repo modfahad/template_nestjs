@@ -1,6 +1,8 @@
-const SlackStringsProd = "https://hooks.slack.com/services/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";
-const SlackStringsDev = "https://hooks.slack.com/services/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";
+import { LogService } from "./log.service";
+const logService: LogService = new LogService();
 
+const SlackStringsProd = "https://hooks.slack.com/services/";
+const SlackStringsDev = "https://hooks.slack.com/services/";
 //PROD
 const bugsChannelProd = require("slack-notify")(SlackStringsProd); //order-success/failure
 //DEV
@@ -70,7 +72,7 @@ const _getAlertObject = (params: SlackNotificationParams) => {
   return alertObj;
 };
 
-export const _slackNotifyForError = (params: SlackNotificationParams) => {
+export const _slackNotifyForError = (logId: string, params: SlackNotificationParams) => {
   const { isProd } = params;
   let channel = bugsChannelProd;
 
@@ -83,11 +85,11 @@ export const _slackNotifyForError = (params: SlackNotificationParams) => {
     channel.alert(obj);
   } catch (e) {
     const { message, error } = e;
-    console.log(`error in _slackNotifyForError , message=[${message}] , error=[${error}]`);
+    logService.error(logId, `error in _slackNotifyForError , message=[${message}] , error=[${error}]`);
   }
 };
 
-export const _slackNotifyForDDOS = (params: SlackNotificationParams) => {
+export const _slackNotifyForDDOS = (logId: string, params: SlackNotificationParams) => {
   const { isProd } = params;
   let channel = ddosChannelProd;
 
@@ -100,6 +102,6 @@ export const _slackNotifyForDDOS = (params: SlackNotificationParams) => {
     channel.alert(obj);
   } catch (e) {
     const { message, error } = e;
-    console.log(`error in _slackNotifyForDDOS , message=[${message}] , error=[${error}]`);
+    logService.log(logId, `error in _slackNotifyForDDOS , message=[${message}] , error=[${error}]`);
   }
 };

@@ -22,7 +22,7 @@ export const _convertObjectToJSONString = (logId: string, e: any) => {
     return strigified;
   } catch (e) {
     const { message, error } = e;
-    return `error in _convertObjectToJSONString , error=[${error}] , msg=[${message}]`;
+    return `error in _convertObjectToJSONString , error=[${error}] , msg=[${message}] logId=[${logId}]`;
   }
 };
 

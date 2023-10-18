@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { INestApplication } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
